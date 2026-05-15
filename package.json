@@ -22,5 +22,8 @@
     "backend/**/*.js": [
       "npm exec --prefix backend -- eslint --fix"
     ]
+  },
+  "dependencies": {
+    "env": "^0.0.2"
   }
 }
