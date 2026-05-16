@@ -106,10 +106,15 @@ const FilterContent = ({
             onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
             className='w-full h-2 bg-slate-300 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb'
           />
-          <div className='flex justify-between mt-3'>
-            <span className='text-gray-400 text-sm font-medium'>${priceRange[0]}</span>
-            <span className='text-white text-sm font-medium'>${priceRange[1]}</span>
-          </div>
+         <div className='flex justify-between mt-3'>
+  <span className='text-slate-700 dark:text-gray-400 text-sm font-medium'>
+    ${priceRange[0]}
+  </span>
+
+  <span className='text-slate-900 dark:text-white text-sm font-semibold'>
+    ${priceRange[1]}
+  </span>
+</div>
         </div>
       </div>
 
@@ -134,7 +139,9 @@ const FilterContent = ({
 
       {/* Sub-Category Filter - Pill Style */}
       <div>
-        <h3 className='text-base font-semibold text-white mb-4'>Sub-Category</h3>
+        <h3 className='font-semibold mb-3 text-slate-900 dark:text-white'>
+  Sub Categories
+</h3>
         <div className='flex flex-wrap gap-2'>
           {subCategories.map((sub, i) => (
             <button
