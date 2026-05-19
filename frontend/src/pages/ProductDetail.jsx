@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { shopDataContext } from '../context/ShopContext';
 import RelatedProduct from '../components/RelatedProduct';
@@ -15,6 +15,52 @@ function ProductDetail() {
   const [activeTab, setActiveTab] = useState('description');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const sizeGroupRef = useRef(null);
+
+  const handleSizeKeyDown = (event, sizes) => {
+    const currentIndex = sizes.indexOf(size);
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      nextIndex = currentIndex >= sizes.length - 1 ? 0 : currentIndex + 1;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      nextIndex = currentIndex <= 0 ? sizes.length - 1 : currentIndex - 1;
+    } else {
+      return;
+    }
+
+    setSize(sizes[nextIndex]);
+    const buttons = sizeGroupRef.current?.querySelectorAll('[role="radio"]');
+    buttons?.[nextIndex]?.focus();
+  };
+
+  const handleTabKeyDown = (event, tabs) => {
+    const tabIds = tabs.map((t) => t.id);
+    const currentIndex = tabIds.indexOf(activeTab);
+    let nextIndex = currentIndex;
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      nextIndex = currentIndex >= tabIds.length - 1 ? 0 : currentIndex + 1;
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      nextIndex = currentIndex <= 0 ? tabIds.length - 1 : currentIndex - 1;
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      nextIndex = tabIds.length - 1;
+    } else {
+      return;
+    }
+
+    setActiveTab(tabIds[nextIndex]);
+    document.getElementById(`tab-${tabIds[nextIndex]}`)?.focus();
+  };
 
   useEffect(() => {
     const found = (product || []).find(item => item._id === productId);
@@ -81,8 +127,8 @@ function ProductDetail() {
     }
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-[#0f172a] dark:to-[#0c4a6e] flex items-center justify-center">
-        <div className="text-slate-900 dark:text-white text-center">
-          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="text-slate-900 dark:text-white text-center" role="status" aria-live="polite" aria-busy="true">
+          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" aria-hidden="true"></div>
           <p className="text-lg">Loading product details...</p>
         </div>
       </div>
@@ -93,17 +139,23 @@ function ProductDetail() {
   const rating = 4.5; // Example rating
   const reviewCount = 124;
 
+  const tabs = [
+    { id: 'description', label: 'Description' },
+    { id: 'specifications', label: 'Specifications' },
+    { id: 'reviews', label: `Reviews (${reviewCount})` },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-[#0f172a] dark:to-[#0c4a6e]">
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-[#0f172a] dark:to-[#0c4a6e]" aria-labelledby="product-title">
       {/* Main Product Section */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-20 pt-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Image Gallery */}
-          <div>
+          <section aria-label="Product images">
             <div className="relative rounded-lg overflow-hidden border border-[#1f2a44]">
               <img
                 src={selectedImage}
-                alt={productData.name}
+                alt={`${productData.name} — image ${currentImageIndex + 1} of ${images.length}`}
                 className="w-full h-96 lg:h-[500px] object-cover"
               />
 
@@ -111,60 +163,68 @@ function ProductDetail() {
               {images.length > 1 && (
                 <>
                   <button
+                    type="button"
                     onClick={prevImage}
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+                    aria-label="Previous product image"
                   >
-                    <FaChevronLeft className="text-white" />
+                    <FaChevronLeft className="text-white" aria-hidden="true" />
                   </button>
                   <button
+                    type="button"
                     onClick={nextImage}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+                    aria-label="Next product image"
                   >
-                    <FaChevronRight className="text-white" />
+                    <FaChevronRight className="text-white" aria-hidden="true" />
                   </button>
                 </>
               )}
 
               {/* Image Counter */}
               {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm">
+                <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm" aria-live="polite">
                   {currentImageIndex + 1} / {images.length}
-                </div>
+                </p>
               )}
             </div>
 
             {/* Thumbnail Gallery */}
-            <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
+            <div className="flex gap-3 mt-4 overflow-x-auto pb-2" role="list" aria-label="Product image thumbnails">
               {images.map((img, i) => (
-                <img
+                <button
                   key={i}
-                  src={img}
-                  alt={`Thumbnail ${i + 1}`}
-                  className={`w-16 h-16 object-cover rounded-lg cursor-pointer transition-all duration-300 border-2 ${selectedImage === img
-                      ? 'border-blue-500'
-                      : 'border-[#1f2a44] opacity-70 hover:opacity-100'
-                    }`}
+                  type="button"
+                  role="listitem"
                   onClick={() => {
                     setSelectedImage(img);
                     setCurrentImageIndex(i);
                   }}
-                />
+                  aria-label={`View image ${i + 1} of ${images.length}`}
+                  aria-current={selectedImage === img ? 'true' : undefined}
+                  className={`w-16 h-16 rounded-lg cursor-pointer transition-all duration-300 border-2 overflow-hidden p-0 ${selectedImage === img
+                      ? 'border-blue-500'
+                      : 'border-[#1f2a44] opacity-70 hover:opacity-100'
+                    }`}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
               ))}
             </div>
-          </div>
+          </section>
 
           {/* Product Info */}
           <div className="fade-in text-slate-900 dark:text-white space-y-6">
             {/* Breadcrumb */}
-            <div className="text-sm text-slate-500 dark:text-gray-400">
+            <nav className="text-sm text-slate-500 dark:text-gray-400" aria-label="Breadcrumb">
               Home / {productData.category} / {productData.subCategory} / <span className="text-cyan-500 dark:text-cyan-400">{productData.name}</span>
-            </div>
+            </nav>
 
             {/* Title and Rating */}
             <div>
-              <h1 className="text-3xl lg:text-4xl font-bold mb-2">{productData.name}</h1>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
+              <h1 id="product-title" className="text-3xl lg:text-4xl font-bold mb-2">{productData.name}</h1>
+              <div className="flex items-center gap-3" aria-label={`Rated ${rating} out of 5 from ${reviewCount} reviews`}>
+                <div className="flex items-center gap-1" aria-hidden="true">
                   {[...Array(5)].map((_, i) => (
                     <FaStar key={i} className={`text-sm ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-slate-400 dark:text-gray-600'}`} />
                   ))}
@@ -172,8 +232,6 @@ function ProductDetail() {
                 </div>
                 <span className="text-slate-500 dark:text-gray-400">({reviewCount} reviews)</span>
               </div>
-              <span className="text-white font-medium">{rating}</span>
-              <span className="text-gray-500">({reviewCount} reviews)</span>
             </div>
 
             {/* Price */}
@@ -194,11 +252,20 @@ function ProductDetail() {
 
             {/* Size Selection */}
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-white uppercase tracking-wide">Select Size</label>
-              <div className="flex flex-wrap gap-2">
+              <span id="size-label" className="block text-sm font-semibold text-white uppercase tracking-wide">Select Size</span>
+              <div
+                ref={sizeGroupRef}
+                role="radiogroup"
+                aria-labelledby="size-label"
+                className="flex flex-wrap gap-2"
+                onKeyDown={(e) => handleSizeKeyDown(e, productData.sizes || [])}
+              >
                 {productData.sizes?.map((s, i) => (
                   <button
                     key={i}
+                    type="button"
+                    role="radio"
+                    aria-checked={size === s}
                     onClick={() => setSize(s)}
                     className={`px-5 py-2.5 rounded-lg border text-sm font-medium transition-all duration-200 ${size === s
                         ? 'bg-cyan-500 border-cyan-500 text-white shadow-lg scale-105'
@@ -213,19 +280,23 @@ function ProductDetail() {
 
             {/* Quantity Selector */}
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-white uppercase tracking-wide">Quantity</label>
+              <span id="quantity-label" className="block text-sm font-semibold text-white uppercase tracking-wide">Quantity</span>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 bg-slate-200 dark:bg-gray-800 rounded-xl p-1">
+                <div className="flex items-center gap-3 bg-slate-200 dark:bg-gray-800 rounded-xl p-1" role="group" aria-labelledby="quantity-label">
                   <button
+                    type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-300 dark:bg-gray-700 hover:bg-slate-400 dark:hover:bg-gray-600 transition-colors"
+                    aria-label="Decrease quantity"
                   >
                     -
                   </button>
-                  <span className="text-lg font-semibold w-10 text-center text-white">{quantity}</span>
+                  <span className="text-lg font-semibold w-10 text-center text-white" aria-live="polite" aria-atomic="true">{quantity}</span>
                   <button
+                    type="button"
                     onClick={() => setQuantity(quantity + 1)}
                     className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-300 dark:bg-gray-700 hover:bg-slate-400 dark:hover:bg-gray-600 transition-colors"
+                    aria-label="Increase quantity"
                   >
                     +
                   </button>
@@ -236,39 +307,34 @@ function ProductDetail() {
 
             {/* Primary CTA */}
             <button
+              type="button"
               onClick={handleAddToCart}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 px-8 rounded-lg font-semibold shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all duration-300 flex items-center justify-center gap-3"
             >
-              <FaShoppingCart />
+              <FaShoppingCart aria-hidden="true" />
               Add to Cart - {currency}{(productData.price * quantity).toLocaleString()}
             </button>
 
             {/* Secondary Actions */}
             <div className="flex gap-3">
               <button
+                type="button"
                 onClick={handleAddToWishlist}
                 className="flex-1 bg-[#0f172a] hover:bg-[#1a2332] border border-[#1f2a44] text-gray-300 hover:text-white py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-                title="Add to Wishlist"
+                aria-label="Add to wishlist"
               >
-                <FaHeart />
+                <FaHeart aria-hidden="true" />
                 Wishlist
               </button>
 
               <div className="flex gap-3">
                 <button
-                  onClick={handleAddToWishlist}
-                  className="w-14 h-14 bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 border border-slate-300 dark:border-gray-700 rounded-xl flex items-center justify-center transition-all duration-300 group"
-                  title="Add to Wishlist"
-                >
-                  <FaHeart className="text-slate-500 dark:text-gray-400 group-hover:text-rose-400 group-hover:scale-110 transition-all" />
-                </button>
-
-                <button
+                  type="button"
                   onClick={handleShare}
                   className="w-14 h-14 bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 border border-slate-300 dark:border-gray-700 rounded-xl flex items-center justify-center transition-all duration-300 group"
-                  title="Share Product"
+                  aria-label="Share product"
                 >
-                  <FaShare className="text-slate-500 dark:text-gray-400 group-hover:text-cyan-400 group-hover:scale-110 transition-all" />
+                  <FaShare className="text-slate-500 dark:text-gray-400 group-hover:text-cyan-400 group-hover:scale-110 transition-all" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -296,14 +362,21 @@ function ProductDetail() {
       <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-[#0f172a] dark:to-[#1e293b] py-16 border-t border-slate-200 dark:border-transparent">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="fade-in">
-            <div className="flex gap-6 border-b border-slate-300 dark:border-gray-700 mb-8">
-              {[
-                { id: 'description', label: 'Description' },
-                { id: 'specifications', label: 'Specifications' },
-                { id: 'reviews', label: `Reviews (${reviewCount})` }
-              ].map((tab) => (
+            <div
+              role="tablist"
+              aria-label="Product information"
+              className="flex gap-6 border-b border-slate-300 dark:border-gray-700 mb-8"
+              onKeyDown={(e) => handleTabKeyDown(e, tabs)}
+            >
+              {tabs.map((tab) => (
                 <button
                   key={tab.id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${tab.id}`}
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`panel-${tab.id}`}
+                  tabIndex={activeTab === tab.id ? 0 : -1}
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-6 py-3 text-lg font-semibold transition-all duration-300 ${activeTab === tab.id
                       ? "text-cyan-400 border-b-2 border-cyan-400"
@@ -317,7 +390,12 @@ function ProductDetail() {
 
             <div className="bg-white/90 dark:bg-gray-900/50 backdrop-blur-md border border-slate-200 dark:border-gray-800 rounded-2xl p-8 shadow-xl">
               {activeTab === 'description' && (
-                <div className="text-slate-700 dark:text-gray-300 space-y-4">
+                <div
+                  role="tabpanel"
+                  id="panel-description"
+                  aria-labelledby="tab-description"
+                  className="text-slate-700 dark:text-gray-300 space-y-4"
+                >
                   <p className="leading-relaxed">
                     {productData.description || "Discover effortless style with our premium product. Designed with comfort and durability in mind, this piece blends timeless fashion with modern quality."}
                   </p>
@@ -326,7 +404,12 @@ function ProductDetail() {
               )}
 
               {activeTab === 'specifications' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-700 dark:text-gray-300">
+                <div
+                  role="tabpanel"
+                  id="panel-specifications"
+                  aria-labelledby="tab-specifications"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-700 dark:text-gray-300"
+                >
                   <div>
                     <h4 className="text-cyan-400 font-semibold mb-3">Product Details</h4>
                     <div className="space-y-2">
@@ -352,7 +435,7 @@ function ProductDetail() {
               )}
 
               {activeTab === 'reviews' && (
-                <div className="space-y-6">
+                <div role="tabpanel" id="panel-reviews" aria-labelledby="tab-reviews" className="space-y-6">
                   <div className="bg-slate-100 dark:bg-gray-800/50 p-6 rounded-xl border border-slate-200 dark:border-gray-700/60">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="flex items-center gap-1">
@@ -403,7 +486,7 @@ function ProductDetail() {
           />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
