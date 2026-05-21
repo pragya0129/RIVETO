@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./Swagger.js"; // Note: The .js extension is required for ES modules!
-
+import swaggerSpec from "./Swagger.js";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -17,6 +16,7 @@ import userRoutes from "./routes/userRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import reviewRoutes from "./routes/reviewRoute.js";
 import recommendationsRoute from "./routes/recommendations.js";
 
 const app = express();
@@ -46,8 +46,9 @@ connectdb();
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);
-app.use("/api/cart", cartRoutes);
+app.use("/api/cart", cartRoutes); 
 app.use("/api/order", orderRoutes);
+app.use("/api/review", reviewRoutes);
 app.use("/api/recommendations", recommendationsRoute);
 
 // Root route (simple test)

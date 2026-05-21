@@ -150,16 +150,8 @@ const handleUpload = async (event) => {
 
 ## 🧪 Testing
 
-```bash
-# Backend
-cd backend
-npm test
-
-# Frontend
-cd ../frontend
-npm test
-```
-
+Testing scripts are currently not configured for this project.
+Future releases may include automated frontend and backend testing support.
 ---
 
 ## 📂 Project Structure
@@ -167,8 +159,8 @@ npm test
 ```
 RIVETO/
 ├── backend/
-│   ├── controllers/
-│   ├── models/
+│   ├── controller/
+│   ├── model/
 │   ├── routes/
 │   ├── middleware/
 │   ├── services/
@@ -236,7 +228,7 @@ befor start contribution star the repo
 4. Push to the branch (`git push origin feature/YourFeature`)
 5. Open a Pull Request
 
-Please review [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Please review [CONTRIBUTION.MD](CONTRIBUTION.MD) for details.
 
 ---
 
