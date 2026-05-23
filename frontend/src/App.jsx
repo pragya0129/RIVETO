@@ -215,7 +215,7 @@ function App() {
 
       {/* Global Comparison Floating Button */}
       {compareList.length > 0 && !comparePanelOpen && (
-        <div className="fixed bottom-6 right-6 z-[100]">
+        <div className="fixed bottom-6 right-6 z-100">
           <button
             onClick={() => toggleComparePanel(true)}
             className="bg-cyan-500 hover:bg-cyan-400 text-white px-6 py-3 rounded-full shadow-lg shadow-cyan-500/30 flex items-center gap-2 transition-all hover:scale-105 border border-cyan-400/50 animate-bounce-short"
