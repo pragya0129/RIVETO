@@ -1,16 +1,14 @@
 import express from "express";
-import {
-  login,
-  registration,
-  logOut,
-  googleLogin,
-  verifyOTP,
-  adminLogin,
-} from "../controller/authcontroller.js";
+import { login, registration, logOut, googleLogin, verifyOTP, adminLogin } from "../controller/authcontroller.js";
 import validateRequest from "../middleware/validateRequest.js";
 import { registerSchema, loginSchema } from "../validators/authSchemas.js";
 
+
 const authRoutes = express.Router();
+
+
+authRoutes.post("/send-otp", sendOTP);
+authRoutes.post("/verify-otp", verifyOTP);
 
 /**
  * @swagger
@@ -46,9 +44,9 @@ const authRoutes = express.Router();
  *                 message:
  *                   type: string
  *                   example: "User registered successfully"
+ * 
  */
-authRoutes.post("/registration", validateRequest(registerSchema), registration);
-
+authRoutes.post("/registration", registrationFinal);
 /**
  * @swagger
  * /api/auth/login:
@@ -118,6 +116,5 @@ authRoutes.post("/googlelogin", googleLogin);
  *         description: OK
  */
 authRoutes.post("/adminlogin", adminLogin);
-authRoutes.post("/verify-otp", verifyOTP);
 
 export default authRoutes;

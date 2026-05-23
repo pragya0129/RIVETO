@@ -104,54 +104,52 @@ function Registration() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
+
     try {
-      await axios.post(`${serverUrl}/api/auth/registration`, formData, {
-        withCredentials: true,
-      });
+      const res = await axios.post(
+        `${serverUrl}/api/auth/send-otp`,
+        formData,
+        { withCredentials: true }
+      );
 
       toast.success('OTP send successfully 🎉');
-      setStep('2');
+      setStep("2");
     } catch (error) {
-      console.error('Registration failed:', error);
-      const errorMessage =
-        error.response?.data?.message ||
-        'Registration failed. Please try again.';
-      toast.error(errorMessage);
+      console.error("OTP ERROR:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to send OTP"
+      );
+
     } finally {
-      setLoading(false);
+      setLoading(false); // 🔥 FIX: prevents stuck button
     }
   };
 
   const verifyOtp = async () => {
     setOtpLoading(true);
 
-    try {
-      await axios.post(
-        `${serverUrl}/api/auth/verify-otp`,
-        {
-          email: formData.email,
-          otp,
-        },
-        { withCredentials: true }
-      );
+  try {
+    await axios.post(`${serverUrl}/api/auth/verify-otp`, {
+      email: formData.email,
+      otp,
+    },{withCredentials: true});
 
-      toast.success('Account verified successfully 🎉');
+    toast.success("Account verified successfully 🎉");
 
-      getCurrentUser();
-      navigate('/');
-    } catch (error) {
-      console.error(error);
-      const msg = error.response?.data?.message || 'OTP verification failed';
-      toast.error(msg);
-    } finally {
-      setOtpLoading(false);
-    }
-  };
+    getCurrentUser();
+    navigate("/");
+  } catch (error) {
+    console.error(error);
+    const msg =
+      error.response?.data?.message || "OTP verification failed";
+    toast.error(msg);
+  } finally {
+    setOtpLoading(false);
+  }
+};
 
   const googleSignup = async () => {
     setGoogleLoading(true);

@@ -7,49 +7,91 @@ import generateOTP from "../utils/otp.js";
 import TempUser from "../model/tempUserModel.js";
 import { otpTemplate } from "../utils/otpTemplet.js";
 
-export const registration = async (req, res) => {
+export const sendOTP = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ message: "Invalid email address" });
+      return res.status(400).json({message: "Invalid email address"});
     }
 
     if (password.length < 8) {
       return res
         .status(400)
-        .json({ message: "Password must be at least 8 characters long" });
+        .json({message: "Password must be at least 8 characters long"});
     }
 
-    const existUser = await User.findOne({ email });
+    const existUser = await User.findOne({email});
     if (existUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({message: "User already exists"});
     }
 
     await TempUser.findOneAndDelete({ email });
 
     const otp = generateOTP();
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const hashPassword = await bcrypt.hash(password, 10);
-
+    // save temp user
     await TempUser.create({
       name,
       email,
-      password: hashPassword,
+      password: hashedPassword,
       otp,
       otpExpire: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    await sendMail(email, otpTemplate(otp));
+    sendMail(email, otpTemplate(otp)).catch(console.error);
 
     return res.status(200).json({
-      message: "OTP sent to email",
+      success: true,
+      message: "OTP sent successfully",
     });
+
   } catch (error) {
-    console.log("registration error:", error);
-    return res.status(500).json({ message: `registration error: ${error}` });
+    console.log("sendOTP error:", error);
+    return res.status(500).json({ message: "Failed to send OTP" });
   }
 };
+
+export const registrationFinal = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const tempUser = await TempUser.findOne({ email });
+
+    if (!tempUser) {
+      return res.status(400).json({ message: "User not verified" });
+    }
+
+    const user = await User.create({
+      name: tempUser.name,
+      email: tempUser.email,
+      password: tempUser.password,
+    });
+    await TempUser.deleteOne({ email });
+
+    const token = genToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user,
+    });
+
+  } catch (error) {
+    console.log("registration error:", error);
+    return res.status(500).json({message: `registration error: ${error}`});
+  }
+};
+
+
 
 export const verifyOTP = async (req, res) => {
   try {
@@ -104,8 +146,7 @@ export const login = async (req, res) => {
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(400).json({message: "Invalid credentials"});
 
     const token = genToken(user._id);
     res.cookie("token", token, {
@@ -128,9 +169,7 @@ export const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
-      const randomPassword = Math.random().toString(36).slice(-12);
-      const hashed = await bcrypt.hash(randomPassword, 10);
-      user = await User.create({ name, email, password: hashed });
+      user = await User.create({name, email});
     }
 
     const token = genToken(user._id);
