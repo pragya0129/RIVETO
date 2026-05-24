@@ -16,13 +16,7 @@ function ShopContext({ children }) {
   const [compareList, setCompareList] = useState([]);
   const [wishlistItem, setWishlistItem] = useState([]);
   const [comparePanelOpen, setComparePanelOpen] = useState(false);
-  const addToWishlist = (itemId) => {
-    setWishlistItem((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
-  };
+ 
   const { serverUrl } = useContext(authDataContext);
   const { userData } = useContext(userDataContext); //
   const [wishlist, setWishlist] = useState([]);
