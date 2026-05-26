@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { authDataContext } from './AuthContext';
 import axios from 'axios';
@@ -14,7 +14,6 @@ function ShopContext({ children }) {
   const [showSearch, setShowSearch] = useState(false);
   const [cartItem, setCartItem] = useState({});
   const [compareList, setCompareList] = useState([]);
-  const [wishlistItem, setWishlistItem] = useState([]);
   const [comparePanelOpen, setComparePanelOpen] = useState(false);
  
   const { serverUrl } = useContext(authDataContext);
@@ -199,7 +198,9 @@ const removeFromWishlist = async (productId) => {
           if (itemInfo && cartItem[items][item] > 0) {
             totalAmount += itemInfo.price * cartItem[items][item];
           }
-        } catch (error) {}
+        } catch (_error) {
+          void _error;
+        }
       }
     }
     return totalAmount;

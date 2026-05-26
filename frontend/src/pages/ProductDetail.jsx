@@ -1,19 +1,11 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { shopDataContext } from '../context/ShopContext';
-import RelatedProduct from '../components/RelatedProduct';
 import { toast } from 'react-toastify';
 import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-import {
-  FaShoppingCart,
-  FaHeart,
-  FaShare,
-  FaStar,
-  FaChevronLeft,
-  FaChevronRight,
-} from 'react-icons/fa';
+
 
 function ProductDetail() {
   const { serverUrl } = useContext(authDataContext);
